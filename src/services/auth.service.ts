@@ -27,7 +27,18 @@ export async function createAuthUser(data: IAuthDocument): Promise<IAuthDocument
       JSON.stringify(messageDetails),
       'Buyer details sent to buyer service.'
     );
-    const userData: IAuthDocument = omit(result.dataValues, ['password']) as IAuthDocument;
+    const userData = omit(result.dataValues, ['password']) as IAuthDocument;
+    return userData;
+  } catch (error) {
+    log.error(error);
+  }
+}
+
+export async function createAuthSeedUser(data: IAuthDocument): Promise<IAuthDocument | undefined> {
+  try {
+    const result = await AuthModel.create(data);
+    const userData = omit(result.dataValues, ['password']) as IAuthDocument;
+
     return userData;
   } catch (error) {
     log.error(error);

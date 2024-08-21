@@ -1,14 +1,14 @@
 import { Client } from '@elastic/elasticsearch';
 import { config } from '@auth/config';
-import { winstonLogger } from '@jahidhiron/jobber-shared';
+import { ISellerGig, winstonLogger } from '@jahidhiron/jobber-shared';
 
 const log = winstonLogger(`${config.ELASTIC_SEARCH_URL}`, 'authElasticSearchServer', 'debug');
 
-const elasticSearchClient = new Client({
+export const elasticSearchClient = new Client({
   node: `${config.ELASTIC_SEARCH_URL}`
 });
 
-async function checkConnection(): Promise<void> {
+export async function checkConnection(): Promise<void> {
   let isConnected = false;
   while (!isConnected) {
     log.info('AuthService connecting to ElasticSearch...');
@@ -23,4 +23,39 @@ async function checkConnection(): Promise<void> {
   }
 }
 
-export { checkConnection };
+async function checkIfIndexExist(indexName: string): Promise<boolean> {
+  const result: boolean = await elasticSearchClient.indices.exists({ index: indexName });
+  return result;
+}
+
+export async function createIndex(indexName: string): Promise<void> {
+  try {
+    const result = await checkIfIndexExist(indexName);
+    if (result) {
+      log.info(`Index "${indexName}" already exist.`);
+    } else {
+      await elasticSearchClient.indices.create({ index: indexName });
+      // after creating index and then call refresh, when
+      // any document is added then it is available to search
+      await elasticSearchClient.indices.refresh({ index: indexName });
+      log.info(`Created index ${indexName}`);
+    }
+  } catch (error) {
+    log.error(`An error occurred while creating the index ${indexName}`);
+    log.log('error', 'AuthService createIndex() method error:', error);
+  }
+}
+
+export async function getDocumentById(index: string, gigId: string): Promise<ISellerGig> {
+  try {
+    const result = await elasticSearchClient.get({
+      index,
+      id: gigId
+    });
+
+    return result._source as ISellerGig;
+  } catch (error) {
+    log.log('error', 'AuthService elastcisearch getDocumentById() method error:', error);
+    return {} as ISellerGig;
+  }
+}
