@@ -34,17 +34,6 @@ export async function createAuthUser(data: IAuthDocument): Promise<IAuthDocument
   }
 }
 
-export async function createAuthSeedUser(data: IAuthDocument): Promise<IAuthDocument | undefined> {
-  try {
-    const result = await AuthModel.create(data);
-    const userData = omit(result.dataValues, ['password']) as IAuthDocument;
-
-    return userData;
-  } catch (error) {
-    log.error(error);
-  }
-}
-
 export async function getAuthUserById(authId: number): Promise<IAuthDocument | undefined> {
   try {
     const user = await AuthModel.findOne({

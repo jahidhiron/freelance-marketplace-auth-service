@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import { createAuthSeedUser, getUserByUsernameOrEmail } from '@auth/services/auth.service';
+import { createAuthUser, getUserByUsernameOrEmail } from '@auth/services/auth.service';
 import { faker } from '@faker-js/faker';
 import { BadRequestError, IAuthDocument, firstLetterUppercase, lowerCase } from '@jahidhiron/jobber-shared';
 import { Request, Response } from 'express';
@@ -43,7 +43,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       emailVerified: sample([0, 1])
     } as IAuthDocument;
 
-    await createAuthSeedUser(authData);
+    await createAuthUser(authData);
   }
   res.status(StatusCodes.OK).json({ message: 'Seed users created successfully.' });
 }
